@@ -1,8 +1,53 @@
-# CarND-Controls-MPC
-Self-Driving Car Engineer Nanodegree Program
-
 ---
+Model Predictive Controller 
+---
+##Introduction:
 
+
+Problem statement: I need to implement Model Predictive Control to drive the car around the track. The CTE will not be provided .
+Additionally, there's a 100 millisecond latency between actuations commands on top of the connection latency.
+
+We would be given the  state vector of a car which includes 6 parameters(ie steering angle , throttle,ptsy,x , y, psi ,speed).
+Based of this we would tell the car what should be its next postion(ie next state vector) .
+
+The simulator can be found [here](https://github.com/udacity/self-driving-car-sim/releases).
+
+We are talking to the simulator via websockets. And also we need to  Eigen lib and IIOPS lib to perform differential equation.
+Their installation to the project are right below in the depedency section.
+
+
+
+----
+Rubics:
+----
+1. #### The Model
+    For this project we using the kinematic  model  where we assume the following states [x,y,ψ,v];
+    Most cars have three actuators: the steering wheel, the throttle pedal and the brake pedal. For simplicity we'll consider
+    the throttle and brake pedals as a singular actuator, with negative values signifying braking and positive values 
+    signifying acceleration.
+    
+    The change of state/update equation for a given state is as below.
+    
+    ![KinematicModelEquation](readme_data/KinematicModelEquation.png)
+
+2. #### Timestep Length and Elapsed Duration (N & dt)
+    These values where 10 and 0.1 that was recommended in updacity . They seem to fit well for the program in hand  had and 
+    intial values which were 25 and 0.01.
+3. #### Polynomial Fitting and MPC Preprocessing
+
+    The way points were transformed to the vehical coordinate system . You can see this in the in the main.cpp page for implementation.
+    ```
+                        for (int i = 0; i < ptsx.size(); i++) {
+                            // shift car degree angle to 90 degree.
+                            double shift_x = ptsx[i] - px;
+                            double shift_y = ptsy[i] - py;
+    
+                            ptsx[i] = (shift_x * cos(0 - psi) - shift_y * sin(0 - psi));
+                            ptsy[i] = (shift_x * sin(0 - psi) + shift_y * cos(0 - psi));
+                        }
+    
+    ```
+You can see the final output video [here](MPC_final_output.mov).
 ## Dependencies
 
 * cmake >= 3.5

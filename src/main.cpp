@@ -113,14 +113,11 @@ int main() {
                     Eigen::Map<Eigen::VectorXd> ptsy_transforn(ptry, 6);// there are 6 elements thus  6 parameters
 
                     auto coeffs = polyfit(ptsx_transforn, ptsy_transforn, 3);
+
                     // calculate cte and epose
-//
                     double cte = polyeval(coeffs, 0);
-//                    double epsi = psi - atan(coeffs[1] + 2 * px * coeffs[2] + 3 * coeffs[3] * pow(px, 2));
                     double epsi = -atan(coeffs[1]);
 
-//                    double cte = polyeval(coeffs, x) - y;
-//                    double epsi = psi - atan(coeffs[1]);
 
 
                     double steer_value = j[1]["steering_angle"];

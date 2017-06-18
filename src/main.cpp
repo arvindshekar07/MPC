@@ -1,3 +1,4 @@
+
 #include <math.h>
 #include <uWS/uWS.h>
 #include <chrono>
@@ -98,22 +99,25 @@ int main() {
                         // shift car degree angle to 90 degree.
                         double shift_x = ptsx[i] - px;
                         double shift_y = ptsy[i] - py;
+
                         ptsx[i] = (shift_x * cos(0 - psi) - shift_y * sin(0 - psi));
                         ptsy[i] = (shift_x * sin(0 - psi) + shift_y * cos(0 - psi));
                     }
 
-                    double* ptrx = &ptsx[0];
-                    Eigen::Map<Eigen::VectorXd> ptsx_transforn(ptrx, 6);
 
-                    double* ptry = &ptsy[0];
-                    Eigen::Map<Eigen::VectorXd> ptsy_transforn(ptry, 6);
+
+                    double *ptrx = &ptsx[0];
+                    Eigen::Map<Eigen::VectorXd> ptsx_transforn(ptrx, 6);// there are 6 elements thus  6 parameters
+
+                    double *ptry = &ptsy[0];
+                    Eigen::Map<Eigen::VectorXd> ptsy_transforn(ptry, 6);// there are 6 elements thus  6 parameters
 
                     auto coeffs = polyfit(ptsx_transforn, ptsy_transforn, 3);
                     // calculate cte and epose
 //
                     double cte = polyeval(coeffs, 0);
-                  double epsi = psi - atan(coeffs[1] + 2 * px * coeffs[2] + 3 * coeffs[3] * pow(px, 2));
-//                    double epsi = -atan(coeffs[1]);
+//                    double epsi = psi - atan(coeffs[1] + 2 * px * coeffs[2] + 3 * coeffs[3] * pow(px, 2));
+                    double epsi = -atan(coeffs[1]);
 
 //                    double cte = polyeval(coeffs, x) - y;
 //                    double epsi = psi - atan(coeffs[1]);
@@ -122,8 +126,6 @@ int main() {
                     double steer_value = j[1]["steering_angle"];
                     double throttle_value = j[1]["throttle"];
 
-                    Eigen::VectorXd state(6);
-                    state << 0, 0, 0, v, cte, epsi;
 
                     /*
                     * TODO: Calculate steering angle and throttle using MPC.
@@ -131,6 +133,8 @@ int main() {
                     * Both are in between [-1, 1].
                     *
                     */
+                    Eigen::VectorXd state(6);
+                    state << 0, 0, 0, v, cte, epsi;
 
 
                     auto vars = mpc.Solve(state, coeffs);
@@ -140,10 +144,12 @@ int main() {
                     vector<double> next_y_vals;
 
                     double poly_inc = 2.5;
-                    int num_points = 25;
+                    int num_points = 100;
+
                     for (int i = 1; i < num_points; i++) {
                         next_x_vals.push_back(poly_inc * i);
                         next_y_vals.push_back(polyeval(coeffs, poly_inc * i));
+//                        next_y_vals.push_back(polyeval(coeffs,  i));
 
                     }
 
@@ -172,15 +178,17 @@ int main() {
                     msgJson["steering_angle"] = vars[0] / (deg2rad(25) * Lf);
                     msgJson["throttle"] = vars[1];
 
-                    msgJson["mpc_x"] = mpc_x_vals;
-                    msgJson["mpc_y"] = mpc_y_vals;
-
-
                     //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
                     // the points in the simulator are connected by a Yellow line
 
                     msgJson["next_x"] = next_x_vals;
                     msgJson["next_y"] = next_y_vals;
+
+
+                    msgJson["mpc_x"] = mpc_x_vals;
+                    msgJson["mpc_y"] = mpc_y_vals;
+
+
 
 
                     auto msg = "42[\"steer\"," + msgJson.dump() + "]";
@@ -238,3 +246,4 @@ int main() {
     }
     h.run();
 }
+
